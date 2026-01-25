@@ -5,9 +5,9 @@ services:
     build:
       context: .
       dockerfile: web/Dockerfile
-    working_dir: /app
+    working_dir: /rails-assignment
     volumes:
-      - .:/app
+      - .:/rails-assignment
     command: sleep infinity
     ports:
       - "3000:3000"
