@@ -1,0 +1,20 @@
+ja:
+  errors:
+    # メッセージ内にスペースを含めない形式で定義
+    format: "%{attribute}%{message}"
+    messages:
+      blank: "を入力してください"
+      taken: "はすでに存在します"
+      too_long: "は%{count}文字以内で入力してください"
+
+  activemodel:
+    attributes:
+      login_form:
+        email: "メールアドレス"
+        password: "パスワード"
+
+  activerecord:
+    attributes:
+      user:
+        email: "メールアドレス"
+        password: "パスワード"
