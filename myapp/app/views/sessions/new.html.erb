@@ -8,12 +8,12 @@
 
 <%= form_with model: @login_form, url: session_path, local: true, data: { turbo: false } do |f| %>
   <div>
-    <%= label_tag :email %>
+    <%= f.label :email %>
     <%= f.email_field :email, value: @login_form.email %>
   </div>
   
   <div>
-    <%= label_tag :password %>
+    <%= f.label :password %>
     <%= f.password_field :password %>
   </div>
 
