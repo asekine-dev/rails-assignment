@@ -17,4 +17,9 @@ class ApplicationController < ActionController::Base
   def logged_in?
     current_user.present?
   end
+
+  def require_login
+    return if logged_in?
+    redirect_to new_session_path
+  end
 end
