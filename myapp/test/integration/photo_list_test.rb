@@ -25,11 +25,11 @@ class PhotoListTest < ActionDispatch::IntegrationTest
 
   test "ログインユーザの写真だけが表示される" do
     # user1の写真
-    @user1.photos.create!(title: "user1-photo1")
-    @user1.photos.create!(title: "user1-photo2")
+    create_photo!(user: @user1, title: "user1-photo1")
+    create_photo!(user: @user1, title: "user1-photo2")
 
     # user2の写真（表示されないはず）
-    @user2.photos.create!(title: "user2-photo1")
+    create_photo!(user: @user2, title: "user2-photo1")
 
     login_as(@user1)
 
@@ -39,8 +39,8 @@ class PhotoListTest < ActionDispatch::IntegrationTest
   end
 
   test "写真は最後にアップロードした順で表示される" do
-    older = @user1.photos.create!(title: "older", created_at: 2.days.ago, updated_at: 2.days.ago)
-    newer = @user1.photos.create!(title: "newer", created_at: 1.hour.ago, updated_at: 1.hour.ago)
+    create_photo!(user: @user1, title: "older", created_at: 2.days.ago, updated_at: 2.days.ago)
+    create_photo!(user: @user1, title: "newer", created_at: 1.hour.ago, updated_at: 1.hour.ago)
 
     login_as(@user1)
 

@@ -15,5 +15,5 @@ Rails.application.routes.draw do
   # --- application routes ---
   root "photos#index"
   resource :session, only: [ :new, :create, :destroy ]
-  resources :photos, only: [ :index ]
+  resources :photos, only: [ :index, :new, :create ]
 end
