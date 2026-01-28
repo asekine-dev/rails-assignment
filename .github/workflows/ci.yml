@@ -85,7 +85,7 @@ jobs:
         run: mkdir -p tmp/rubocop
 
       - name: Prepare RuboCop cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         env:
           DEPENDENCIES_HASH: ${{ hashFiles('myapp/.ruby-version', 'myapp/**/.rubocop.yml', 'myapp/**/.rubocop_todo.yml', 'myapp/Gemfile.lock') }}
         with:
