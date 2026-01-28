@@ -64,7 +64,7 @@ class LoginTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
     assert_select "li", /パスワードは.*文字以内で入力してください/
   end
-  
+
   test "ログイン成功するとsessionにuser_idが入る" do
     post session_path, params: { login_form: { email: "test@example.com", password: "password" } }
     assert_equal @user.id, session[:user_id]
