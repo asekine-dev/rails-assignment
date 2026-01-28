@@ -55,3 +55,8 @@
   color: #888;
   font-size: 12px;
 }
+
+/* Rails標準でバリデーションエラーフィールドをラップする構造 */
+.field_with_errors {
+  display: inline;
+}

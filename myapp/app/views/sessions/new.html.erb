@@ -1,8 +1,10 @@
 <h1>ログイン</h1>
 
-<% @login_form.errors.full_messages.each do |msg| %>
+<% if @login_form.errors.present? %>
   <ul>
-  <li style="color:red"><%= msg %></li>
+    <% @login_form.errors.full_messages.each do |msg| %>
+      <li style="color:red"><%= msg %></li>
+    <% end %>
   </ul>
 <% end %>
 

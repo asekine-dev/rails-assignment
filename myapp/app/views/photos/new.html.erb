@@ -1,7 +1,11 @@
 <h1>写真アップロード</h1>
 
-<% @photo.errors.full_messages.each do |msg| %>
-  <ul><li style="color:red"><%= msg %></li></ul>
+<% if @photo.errors.present? %>
+  <ul>
+    <% @photo.errors.full_messages.each do |msg| %>
+      <li style="color:red"><%= msg %></li>
+    <% end %>
+  </ul>
 <% end %>
 
 <%= form_with model: @photo, local: true do |f| %>
