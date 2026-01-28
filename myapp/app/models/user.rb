@@ -5,7 +5,7 @@ class User < ApplicationRecord
   validates :email, presence: true, uniqueness: true
   # パスワードは新規ユーザ作成時のみ必須バリデーション
   validates :password, presence: true, on: :create
-  
+
   # 以下、プライベートメソッド
   private
 
