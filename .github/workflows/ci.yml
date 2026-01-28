@@ -1,0 +1,144 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+
+jobs:
+  scan_ruby:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: myapp
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Read Ruby version
+        id: rubyver
+        run: echo "version=$(cat .ruby-version)" >> $GITHUB_OUTPUT
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ steps.rubyver.outputs.version }}
+          bundler-cache: true
+          working-directory: myapp
+
+      - name: Scan for common Rails security vulnerabilities using static analysis
+        run: bin/brakeman --no-pager
+
+      - name: Scan for known security vulnerabilities in gems used
+        run: bin/bundler-audit check --update
+
+  scan_js:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: myapp
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Read Ruby version
+        id: rubyver
+        run: echo "version=$(cat .ruby-version)" >> $GITHUB_OUTPUT
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ steps.rubyver.outputs.version }}
+          bundler-cache: true
+          working-directory: myapp
+
+      - name: Scan for security vulnerabilities in JavaScript dependencies
+        run: bin/importmap audit
+
+  lint:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: myapp
+
+    env:
+      RUBOCOP_CACHE_ROOT: tmp/rubocop
+    
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Read Ruby version
+        id: rubyver
+        run: echo "version=$(cat .ruby-version)" >> $GITHUB_OUTPUT
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ steps.rubyver.outputs.version }}
+          bundler-cache: true
+          working-directory: myapp
+
+      - name: Ensure RuboCop cache dir exists
+        run: mkdir -p tmp/rubocop
+
+      - name: Prepare RuboCop cache
+        uses: actions/cache@v4
+        env:
+          DEPENDENCIES_HASH: ${{ hashFiles('myapp/.ruby-version', 'myapp/**/.rubocop.yml', 'myapp/**/.rubocop_todo.yml', 'myapp/Gemfile.lock') }}
+        with:
+          path: myapp/tmp/rubocop
+          key: rubocop-${{ runner.os }}-${{ env.DEPENDENCIES_HASH }}
+          restore-keys: |
+            rubocop-${{ runner.os }}-${{ env.DEPENDENCIES_HASH }}-
+
+      - name: Lint code for consistent style
+        run: bin/rubocop -f github -f progress --cache-root tmp/rubocop
+
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_DATABASE: myapp_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -ppassword"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - name: Install packages
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y default-libmysqlclient-dev
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Read Ruby version
+        id: rubyver
+        run: echo "version=$(cat myapp/.ruby-version)" >> $GITHUB_OUTPUT
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ steps.rubyver.outputs.version }}
+          bundler-cache: true
+          working-directory: myapp
+
+      - name: Run tests
+        working-directory: myapp
+        env:
+          RAILS_ENV: test
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_USERNAME: root
+          DB_PASSWORD: password
+          DB_NAME: myapp_test
+        run: bin/rails db:test:prepare test
