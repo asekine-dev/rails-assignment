@@ -1,0 +1,1375 @@
+/rails-assignment/myapp/config/routes.rb
+```[config/routes.rb]
+Rails.application.routes.draw do
+  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
+
+  # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
+  # Can be used by load balancers and uptime monitors to verify that the app is live.
+  get "up" => "rails/health#show", as: :rails_health_check
+
+  # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
+  # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
+  # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
+
+  # Defines the root path route ("/")
+  # root "posts#index"
+
+  # --- application routes ---
+  root "photos#index"
+  resource :session, only: [ :new, :create, :destroy ]
+  resources :photos, only: [ :index, :new, :create ] do
+    post :tweet, on: :member
+  end
+
+  resource :oauth, only: [], controller: "oauth" do
+    get :authorize
+    get :callback
+  end
+end
+```
+
+/rails-assignment/myapp/db/migrate
+```[db/migrate/20260125070655_create_users.rb]
+class CreateUsers < ActiveRecord::Migration[8.1]
+  def change
+    create_table :users do |t|
+      t.string :email
+      t.string :password_digest
+
+      t.timestamps
+    end
+  end
+end
+```
+
+```[db/migrate/20260127105524_create_active_storage_tables.active_storage.rb]
+# This migration comes from active_storage (originally 20170806125915)
+class CreateActiveStorageTables < ActiveRecord::Migration[7.0]
+  def change
+    # Use Active Record's configured type for primary and foreign keys
+    primary_key_type, foreign_key_type = primary_and_foreign_key_types
+
+    create_table :active_storage_blobs, id: primary_key_type do |t|
+      t.string   :key,          null: false
+      t.string   :filename,     null: false
+      t.string   :content_type
+      t.text     :metadata
+      t.string   :service_name, null: false
+      t.bigint   :byte_size,    null: false
+      t.string   :checksum
+
+      if connection.supports_datetime_with_precision?
+        t.datetime :created_at, precision: 6, null: false
+      else
+        t.datetime :created_at, null: false
+      end
+
+      t.index [ :key ], unique: true
+    end
+
+    create_table :active_storage_attachments, id: primary_key_type do |t|
+      t.string     :name,     null: false
+      t.references :record,   null: false, polymorphic: true, index: false, type: foreign_key_type
+      t.references :blob,     null: false, type: foreign_key_type
+
+      if connection.supports_datetime_with_precision?
+        t.datetime :created_at, precision: 6, null: false
+      else
+        t.datetime :created_at, null: false
+      end
+
+      t.index [ :record_type, :record_id, :name, :blob_id ], name: :index_active_storage_attachments_uniqueness, unique: true
+      t.foreign_key :active_storage_blobs, column: :blob_id
+    end
+
+    create_table :active_storage_variant_records, id: primary_key_type do |t|
+      t.belongs_to :blob, null: false, index: false, type: foreign_key_type
+      t.string :variation_digest, null: false
+
+      t.index [ :blob_id, :variation_digest ], name: :index_active_storage_variant_records_uniqueness, unique: true
+      t.foreign_key :active_storage_blobs, column: :blob_id
+    end
+  end
+
+  private
+    def primary_and_foreign_key_types
+      config = Rails.configuration.generators
+      setting = config.options[config.orm][:primary_key_type]
+      primary_key_type = setting || :primary_key
+      foreign_key_type = setting || :bigint
+      [ primary_key_type, foreign_key_type ]
+    end
+end
+```
+
+```[db/migrate/20260127111308_create_photos.rb]
+class CreatePhotos < ActiveRecord::Migration[8.1]
+  def change
+    create_table :photos do |t|
+      t.references :user, foreign_key: true, null: false
+      t.string :title
+
+      t.timestamps
+    end
+  end
+end
+```
+
+```[db/migrate/20260127114108_add_unique_index_to_users_email.rb]
+class AddUniqueIndexToUsersEmail < ActiveRecord::Migration[8.1]
+  def change
+    add_index :users, :email, unique: true
+  end
+end
+```
+
+/rails-assignment/myapp/db/schema.rb
+```[db/schema.rb]
+# This file is auto-generated from the current state of the database. Instead
+# of editing this file, please use the migrations feature of Active Record to
+# incrementally modify your database, and then regenerate this schema definition.
+#
+# This file is the source Rails uses to define your schema when running `bin/rails
+# db:schema:load`. When creating a new database, `bin/rails db:schema:load` tends to
+# be faster and is potentially less error prone than running all of your
+# migrations from scratch. Old migrations may fail to apply correctly if those
+# migrations use external dependencies or application code.
+#
+# It's strongly recommended that you check this file into your version control system.
+
+ActiveRecord::Schema[8.1].define(version: 2026_01_27_114108) do
+  create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.bigint "blob_id", null: false
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.bigint "record_id", null: false
+    t.string "record_type", null: false
+    t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
+    t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
+  end
+
+  create_table "active_storage_blobs", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.bigint "byte_size", null: false
+    t.string "checksum"
+    t.string "content_type"
+    t.datetime "created_at", null: false
+    t.string "filename", null: false
+    t.string "key", null: false
+    t.text "metadata"
+    t.string "service_name", null: false
+    t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
+  end
+
+  create_table "active_storage_variant_records", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.bigint "blob_id", null: false
+    t.string "variation_digest", null: false
+    t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "photos", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "title"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id"], name: "index_photos_on_user_id"
+  end
+
+  create_table "users", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "email"
+    t.string "password_digest"
+    t.datetime "updated_at", null: false
+    t.index ["email"], name: "index_users_on_email", unique: true
+  end
+
+  add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "photos", "users"
+end
+```
+
+/rails-assignment/myapp/db/seeds.rb
+```[db/seeds.rb]
+# This file should ensure the existence of records required to run the application in every environment (production,
+# development, test). The code here should be idempotent so that it can be executed at any point in every environment.
+# The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
+#
+# Example:
+#
+#   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
+#     MovieGenre.find_or_create_by!(name: genre_name)
+#   end
+
+
+# NOTE: 全環境共通の seed。実運用では環境別に分ける想定。
+
+# ===========================
+#           User
+# ===========================
+# User テーブルにデフォルトのユーザを追加
+users = [
+  {
+    email: "emptytest@example.com",
+    password: "password",
+    password_confirmation: "password"
+  },
+  {
+    email: "user1@example.com",
+    password: "password1",
+    password_confirmation: "password1"
+  },
+  {
+    email: "user2@example.com",
+    password: "password2",
+    password_confirmation: "password2"
+  }
+]
+
+users.each do |attrs|
+  User.find_or_create_by!(email: attrs[:email]) do |user|
+    user.password = attrs[:password]
+    user.password_confirmation = attrs[:password_confirmation]
+  end
+end
+
+# ===========================
+#           Photo
+# ===========================
+# seed用画像パス
+seed_images_dir = Rails.root.join("db/seeds/images")
+
+# Userを取得（normalize_emailがあるので小文字で）
+user1 = User.find_by!(email: "user1@example.com")
+user2 = User.find_by!(email: "user2@example.com")
+
+# Photo は毎回作り直す（増殖防止）
+user1.photos.destroy_all
+user2.photos.destroy_all
+
+photos = [
+  {
+    user: user1,
+    title: "サンプル1",
+    file: "sample1.jpg",
+    content_type: "image/jpeg"
+  },
+  {
+    user: user1,
+    title: "サンプル2",
+    file: "sample2.jpg",
+    content_type: "image/jpeg"
+  },
+  {
+    user: user2,
+    title: "サンプル3",
+    file: "sample3.jpg",
+    content_type: "image/jpeg"
+  }
+]
+
+photos.each do |p|
+  begin
+    photo = p[:user].photos.build(title: p[:title])
+
+    path = seed_images_dir.join(p[:file])
+    file = File.open(path)
+
+    photo.image.attach(
+      io: file,
+      filename: p[:file],
+      content_type: p[:content_type]
+    )
+
+    photo.save!
+  ensure
+    file&.close
+  end
+end
+```
+
+/rails-assignment/myapp/app/controllers/application_controller.rb
+```[app/controllers/application_controller.rb]
+class ApplicationController < ActionController::Base
+  # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
+  allow_browser versions: :modern
+
+  # Changes to the importmap will invalidate the etag for HTML responses
+  stale_when_importmap_changes
+
+  # --- application specific settings ---
+  helper_method :current_user, :logged_in?, :oauth_configured?
+
+  private
+
+  def current_user
+    @current_user ||= User.find_by(id: session[:user_id])
+  end
+
+  def logged_in?
+    current_user.present?
+  end
+
+  def require_login
+    return if logged_in?
+    redirect_to new_session_path
+  end
+
+  def oauth_configured?
+    ENV["OAUTH_AUTHORIZE_URL"].present? &&
+      ENV["OAUTH_TOKEN_URL"].present? &&
+      ENV["OAUTH_CLIENT_ID"].present? &&
+      ENV["OAUTH_CLIENT_SECRET"].present? &&
+      ENV["OAUTH_REDIRECT_URI"].present? &&
+      ENV["OAUTH_SCOPE"].present? &&
+      ENV["TWEET_CREATE_URL"].present?
+  end
+end
+```
+
+/rails-assignment/myapp/app/controllers/photos_controller.rb
+```[app/controllers/photos_controller.rb]
+class PhotosController < ApplicationController
+  before_action :require_login
+
+  def index
+    @photos = current_user.photos.order(created_at: :desc)
+  end
+
+  def new
+    @photo = current_user.photos.new
+  end
+
+  def create
+    @photo = current_user.photos.new(photo_params)
+    if @photo.save
+      redirect_to photos_path, notice: "アップロードしました"
+    else
+      render :new, status: :unprocessable_entity
+    end
+  end
+
+
+
+  def tweet
+    begin
+      photo = current_user.photos.find(params[:id])
+      token = session[:oauth_access_token]
+
+      return redirect_to(photos_path, alert: "OAuth連携が必要です") if token.blank?
+      return redirect_to(photos_path, alert: "画像がありません") unless photo.image.attached?
+
+      image_url = rails_blob_url(photo.image, host: request.base_url)
+      TweetClient.new(access_token: token).create_tweet!(
+        title: photo.title,
+        url: image_url
+      )
+
+      redirect_to photos_path, notice: "ツイートしました"
+    rescue => e
+      Rails.logger.error("[Tweet] failed: #{e.class} #{e.message}")
+      redirect_to photos_path, alert: "ツイートに失敗しました"
+    end
+  end
+
+
+
+  private
+
+  def photo_params
+    params.require(:photo).permit(:title, :image)
+  end
+end
+```
+
+/rails-assignment/myapp/app/controllers/oauth_controller.rb
+```[app/controllers/oauth_controller.rb]
+class OauthController < ApplicationController
+  before_action :require_login
+
+  def authorize
+    unless oauth_configured?
+      redirect_to photos_path, alert: "OAuth連携の設定が未完了です"
+      return
+    end
+
+    redirect_to Oauth::AuthorizationUrl.new.to_s, allow_other_host: true
+  end
+
+  def callback
+    begin
+      return redirect_to(photos_path, alert: "OAuth連携の設定が未完了です") unless oauth_configured?
+
+      code = params[:code].to_s
+      return redirect_to(photos_path, alert: "認可コードが取得できませんでした") if code.blank?
+
+      token = Oauth::TokenClient.new.exchange_code_for_token!(code:)
+      session[:oauth_access_token] = token
+      redirect_to photos_path, notice: "OAuth連携しました"
+    rescue => e
+      Rails.logger.error("[OAuth] callback failed: #{e.class} #{e.message}")
+      redirect_to photos_path, alert: "OAuth連携に失敗しました"
+    end
+  end
+end
+```
+
+/rails-assignment/myapp/app/controllers/sessions_controller.rb
+```[app/controllers/sessions_controller.rb]
+class SessionsController < ApplicationController
+  def new
+    @login_form = LoginForm.new
+  end
+
+  def create
+    form_params = params.require(:login_form).permit(:email, :password)
+    @login_form = LoginForm.new(form_params)
+
+    if @login_form.invalid?
+      return render :new, status: :unprocessable_entity
+    end
+
+    user = User.authenticate_by(
+      email: @login_form.normalized_email,
+      password: @login_form.password
+    )
+
+    if user
+      session[:user_id] = user.id
+      redirect_to photos_path
+    else
+      @login_form.errors.add(:base, "メールアドレスまたはパスワードが違います")
+      render :new, status: :unprocessable_entity
+    end
+  end
+
+  def destroy
+    reset_session
+    redirect_to new_session_path
+  end
+end
+```
+
+/rails-assignment/myapp/app/helpers/application_helper.rb
+```[app/helpers/application_helper.rb]
+module ApplicationHelper
+  def show_logout_link?
+    logged_in? && controller_name != "sessions"
+  end
+
+  def oauth_connected?
+    session[:oauth_access_token].present?
+  end
+end
+```
+
+/rails-assignment/myapp/app/helpers/oauth_helper.rb
+```[app/helpers/oauth_helper.rb]
+module OauthHelper
+end
+```
+
+/rails-assignment/myapp/app/models/user.rb
+```[app/models/user.rb]
+class User < ApplicationRecord
+  has_many :photos, dependent: :destroy
+
+  has_secure_password
+  before_validation :normalize_email
+
+  validates :email, presence: true, uniqueness: true
+  # パスワードは新規ユーザ作成時のみ必須バリデーション
+  validates :password, presence: true, on: :create
+
+  # 以下、プライベートメソッド
+  private
+
+  def normalize_email
+    # emailの入力があるとき、大文字が含まれていても小文字へ変換する
+    self.email = email.to_s.strip.downcase
+  end
+end
+```
+
+/rails-assignment/myapp/app/models/photo.rb
+```[app/models/photo.rb]
+class Photo < ApplicationRecord
+  belongs_to :user
+  has_one_attached :image
+
+  validates :title, presence: true, length: { maximum: 30 }
+  validates :image, presence: true
+  validate :image_content_type
+
+  private
+
+  def image_content_type
+    return unless image.attached?
+
+    allowed = %w[image/jpeg image/png image/gif]
+    unless allowed.include?(image.content_type)
+      errors.add(:image, "は jpg, jpeg, png, gif のみアップロード可能です")
+    end
+  end
+end
+```
+
+/rails-assignment/myapp/app/forms/login_form.rb
+```[app/forms/login_form.rb]
+# ログイン画面の入力値保持とバリデーションを担うフォームオブジェクト
+class LoginForm
+  include ActiveModel::Model
+
+  EMAIL_MAX_LENGTH = 255
+  PASSWORD_MAX_LENGTH = 72
+
+  attr_accessor :email, :password
+
+  validates :email, presence: true, length: { maximum: EMAIL_MAX_LENGTH }
+  validates :password, presence: true, length: { maximum: PASSWORD_MAX_LENGTH }
+
+  def normalized_email
+    email.to_s.strip.downcase
+  end
+end
+```
+
+/rails-assignment/myapp/app/services
+```[app/services/http_client.rb]
+require "net/http"
+
+module HttpClient
+  def self.request(uri, req)
+    # uriがhttpsのとき、httpsで通信する。そうでないときは、httpで通信する
+    Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == "https") do |http|
+      http.request(req)
+    end
+  end
+end
+```
+
+```[app/services/oauth/authorization_url.rb]
+module Oauth
+  # NOTE: stateを利用した真正性確認は行わない
+  class AuthorizationUrl
+    def to_s
+      uri = URI(ENV.fetch("OAUTH_AUTHORIZE_URL"))
+      uri.query = URI.encode_www_form(
+        response_type: "code",
+        client_id: ENV.fetch("OAUTH_CLIENT_ID"),
+        redirect_uri: ENV.fetch("OAUTH_REDIRECT_URI"),
+        scope: ENV.fetch("OAUTH_SCOPE")
+      )
+      uri.to_s
+    end
+  end
+end
+```
+
+```[app/services/oauth/token_client.rb]
+require "net/http"
+require "json"
+
+module Oauth
+  class TokenClient
+    def exchange_code_for_token!(code:)
+      uri = URI(ENV.fetch("OAUTH_TOKEN_URL"))
+
+      req = Net::HTTP::Post.new(uri)
+      req["Content-Type"] = "application/x-www-form-urlencoded"
+
+      req.set_form_data(
+        grant_type: "authorization_code",
+        code: code,
+        redirect_uri: ENV.fetch("OAUTH_REDIRECT_URI"),
+        client_id: ENV.fetch("OAUTH_CLIENT_ID"),
+        client_secret: ENV.fetch("OAUTH_CLIENT_SECRET")
+      )
+
+      res = HttpClient.request(uri, req)
+
+      unless res.is_a?(Net::HTTPSuccess)
+        raise "Token exchange failed: status=#{res.code} body=#{res.body}"
+      end
+
+      json = JSON.parse(res.body)
+      json.fetch("access_token")
+    end
+  end
+end
+```
+
+```[app/services/tweet_client.rb]
+require "net/http"
+require "json"
+
+class TweetClient
+  def initialize(access_token:)
+    @access_token = access_token
+  end
+
+  def create_tweet!(title:, url:)
+    uri = URI(ENV.fetch("TWEET_CREATE_URL"))
+    req = Net::HTTP::Post.new(uri)
+    req["Content-Type"] = "application/json"
+    req["Authorization"] = "Bearer #{@access_token}"
+
+    req.body = { text: title, url: url }.to_json
+
+    res = HttpClient.request(uri, req)
+
+    # ステータスコード201 かつ 作成したツイートがJSON形式で返却されると成功
+    unless res.code.to_i == 201
+      raise "Tweet create failed: status=#{res.code} body=#{res.body}"
+    end
+
+    JSON.parse(res.body)
+  end
+end
+```
+
+/rails-assignment/myapp/app/views/layouts/application.html.erb
+```[app/views/layouts/application.html.erb]
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || "Myapp" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Myapp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= yield :head %>
+
+    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
+    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
+
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.png">
+
+    <%# Includes all stylesheet files in app/assets/stylesheets %>
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body>
+    <% flash.each do |type, message| %>
+      
+      <div class="flash flash-<%= type %> flash--auto-hide"><%= message %></div>
+    <% end %>
+
+    <% if show_logout_link? %>
+      <%= link_to "ログアウト", session_path, data: { turbo_method: :delete } %>
+    <% end %>
+
+    <%= yield %>
+  </body>
+</html>
+```
+
+/rails-assignment/myapp/app/views/photos
+```[app/views/photos/index.html.erb]
+<h1>写真一覧</h1>
+
+<% if oauth_configured? %>
+  <div>
+    <% if oauth_connected? %>
+      <p>OAuth連携済み</p>
+    <% else %>
+      <%= link_to "OAuth連携する", authorize_oauth_path %>
+    <% end %>
+  </div>
+<% end %>
+
+<div>
+  <%= link_to "写真をアップロード", new_photo_path %>
+</div>
+
+<div class="photo-grid">
+  <% @photos.each do |photo| %>
+    <div class="photo-card">
+      <div class="photo-title"><%= photo.title %></div>
+
+      <div class="photo-square">
+        <% if photo.image.attached? %>
+          <%= image_tag photo.image, class: "photo-img" %>
+        <% else %>
+          <div class="photo-empty">No Image</div>
+        <% end %>
+      </div>
+
+      <% if oauth_connected? %>
+        <%= button_to "ツイートする", tweet_photo_path(photo), method: :post %>
+      <% end %>
+    </div>
+  <% end %>
+</div>```
+
+```[app/views/photos/new.html.erb]
+<h1>写真アップロード</h1>
+
+<% if @photo.errors.present? %>
+  <ul>
+    <% @photo.errors.full_messages.each do |msg| %>
+      <li style="color:red"><%= msg %></li>
+    <% end %>
+  </ul>
+<% end %>
+
+<%= form_with model: @photo, local: true do |f| %>
+  <div>
+    <%= f.label :title %>
+    <%= f.text_field :title %>
+  </div>
+
+  <div>
+    <%= f.label :image %>
+    <%= f.file_field :image %>
+  </div>
+
+  <%= f.submit "アップロード" %>
+  <%= link_to "キャンセル", photos_path %>
+<% end %>```
+
+/rails-assignment/myapp/app/views/sessions
+```[app/views/sessions/new.html.erb]
+<h1>ログイン</h1>
+
+<% if @login_form.errors.present? %>
+  <ul>
+    <% @login_form.errors.full_messages.each do |msg| %>
+      <li style="color:red"><%= msg %></li>
+    <% end %>
+  </ul>
+<% end %>
+
+<%= form_with model: @login_form, url: session_path, local: true, data: { turbo: false } do |f| %>
+  <div>
+    <%= f.label :email %>
+    <%= f.email_field :email, value: @login_form.email %>
+  </div>
+  
+  <div>
+    <%= f.label :password %>
+    <%= f.password_field :password %>
+  </div>
+
+  <%= f.submit "ログイン" %>
+<% end %>```
+
+/rails-assignment/myapp/test/integration
+```[test/integration/.keep]
+```
+
+```[test/integration/auth_guard_test.rb]
+require "test_helper"
+
+class AuthGuardTest < ActionDispatch::IntegrationTest
+  # test "the truth" do
+  #   assert true
+  # end
+
+  test "未ログインで写真一覧へアクセスするとログイン画面へリダイレクトされる" do
+    get photos_path
+    assert_redirected_to new_session_path
+    follow_redirect!
+    assert_select "form[action=?]", session_path
+    assert_select "input[name=?]", "login_form[email]"
+  end
+
+  test "未ログインで写真アップロード画面へアクセスするとログインへリダイレクト" do
+    get new_photo_path
+    assert_redirected_to new_session_path
+  end
+
+  test "未ログインで写真作成POSTするとログインへリダイレクト" do
+    post photos_path, params: { photo: { title: "x" } }
+    assert_redirected_to new_session_path
+  end
+end
+```
+
+```[test/integration/login_test.rb]
+require "test_helper"
+
+class LoginTest < ActionDispatch::IntegrationTest
+  # test "the truth" do
+  #   assert true
+  # end
+
+  setup do
+    @user = User.create!(
+      email: "test@example.com",
+      password: "password",
+      password_confirmation: "password"
+    )
+  end
+
+  test "email未入力ならエラーになり、ログイン画面が再表示される" do
+    post session_path, params: { login_form: { email: "", password: "password" } }
+
+    assert_response :unprocessable_entity
+    assert_select "h1", "ログイン"
+    assert_select "li", /メールアドレスを入力してください/
+  end
+
+  test "password未入力ならエラーになり、emailは保持される" do
+    post session_path, params: { login_form: { email: "TEST@EXAMPLE.COM", password: "" } }
+
+    assert_response :unprocessable_entity
+    assert_select "li", /パスワードを入力してください/
+
+    # emailが再表示で残っていること（value属性を見る）
+    assert_select 'input[type="email"][value="TEST@EXAMPLE.COM"]'
+  end
+
+  test "認証情報が違う場合はエラー表示され、emailは保持される" do
+    post session_path, params: { login_form: { email: "test@example.com", password: "wrong" } }
+
+    assert_response :unprocessable_entity
+    assert_select "li", /メールアドレスまたはパスワードが違います/
+
+    # emailが再表示で残っていること（value属性を見る）
+    assert_select 'input[type="email"][value="test@example.com"]'
+  end
+
+  test "メールアドレスは大小文字無視でログインできる" do
+    post session_path, params: { login_form: { email: "TEST@EXAMPLE.COM", password: "password" } }
+
+    assert_redirected_to photos_path
+    follow_redirect!
+    assert_response :success
+  end
+
+  test "emailが長すぎるとエラーになる" do
+    long_email = "a" * (LoginForm::EMAIL_MAX_LENGTH + 1) + "@example.com"
+    post session_path, params: { login_form: { email: long_email, password: "password" } }
+
+    assert_response :unprocessable_entity
+    assert_select "li", /メールアドレスは.*文字以内で入力してください/
+  end
+
+  test "passwordが長すぎるとエラーになる" do
+    long_password = "a" * (LoginForm::PASSWORD_MAX_LENGTH + 1)
+    post session_path, params: { login_form: { email: "test@example.com", password: long_password } }
+
+    assert_response :unprocessable_entity
+    assert_select "li", /パスワードは.*文字以内で入力してください/
+  end
+
+  test "ログイン成功するとsessionにuser_idが入る" do
+    post session_path, params: { login_form: { email: "test@example.com", password: "password" } }
+    assert_equal @user.id, session[:user_id]
+  end
+
+  test "メールアドレスの前後空白があってもログインできる" do
+    post session_path, params: { login_form: { email: "  test@example.com  ", password: "password" } }
+    assert_redirected_to photos_path
+  end
+end
+```
+
+```[test/integration/logout_test.rb]
+require "test_helper"
+
+class LogoutTest < ActionDispatch::IntegrationTest
+  # test "the truth" do
+  #   assert true
+  # end
+
+  setup do
+    @user = User.create!(
+      email: "test@example.com",
+      password: "password",
+      password_confirmation: "password"
+    )
+  end
+
+  test "ログアウトするとsessionがクリアされ、ログイン画面へ遷移する" do
+    post session_path, params: { login_form: { email: "test@example.com", password: "password" } }
+    assert_equal @user.id, session[:user_id]
+
+    delete session_path
+
+    assert_redirected_to new_session_path
+    assert_nil session[:user_id]
+    follow_redirect!
+    assert_select "form[action=?]", session_path
+    assert_select "input[name=?]", "login_form[email]"
+  end
+end
+```
+
+```[test/integration/oauth_authorize_test.rb]
+require "test_helper"
+
+class OauthAuthorizeTest < ActionDispatch::IntegrationTest
+  # test "the truth" do
+  #   assert true
+  # end
+
+  setup do
+    @user = User.create!(email: "test@example.com", password: "password", password_confirmation: "password")
+    post session_path, params: { login_form: { email: @user.email, password: "password" } }
+
+    @orig_env = ENV.to_h
+    ENV["OAUTH_AUTHORIZE_URL"] = "http://example.com/oauth/authorize"
+    ENV["OAUTH_TOKEN_URL"] = "http://example.com/oauth/token"
+    ENV["OAUTH_CLIENT_ID"] = "client_id"
+    ENV["OAUTH_CLIENT_SECRET"] = "client_secret"
+    ENV["OAUTH_REDIRECT_URI"] = "http://localhost:3000/oauth/callback"
+    ENV["OAUTH_SCOPE"] = "read"
+    ENV["TWEET_CREATE_URL"] = "http://example.com/api/tweets"
+  end
+
+  teardown { ENV.replace(@orig_env) }
+
+  test "authorize を押すと外部の認可URLへリダイレクトされる" do
+    get authorize_oauth_path
+
+    assert_response :redirect
+    loc = response.headers["Location"]
+    assert loc.start_with?("http://example.com/oauth/authorize?")
+
+    # クエリの存在チェック（厳密一致にしすぎると壊れやすい）
+    assert_includes loc, "response_type=code"
+    assert_includes loc, "client_id=client_id"
+    assert_includes loc, "redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Foauth%2Fcallback"
+    assert_includes loc, "scope=read"
+  end
+end
+```
+
+```[test/integration/oauth_callback_test.rb]
+require "test_helper"
+
+class OauthCallbackTest < ActionDispatch::IntegrationTest
+  # test "the truth" do
+  #   assert true
+  # end
+
+  setup do
+    @user = User.create!(email: "test@example.com", password: "password", password_confirmation: "password")
+    post session_path, params: { login_form: { email: @user.email, password: "password" } }
+
+    @orig_env = ENV.to_h
+    ENV["OAUTH_AUTHORIZE_URL"] = "http://example.com/oauth/authorize"
+    ENV["OAUTH_TOKEN_URL"] = "http://example.com/oauth/token"
+    ENV["OAUTH_CLIENT_ID"] = "client_id"
+    ENV["OAUTH_CLIENT_SECRET"] = "client_secret"
+    ENV["OAUTH_REDIRECT_URI"] = "http://localhost:3000/oauth/callback"
+    ENV["OAUTH_SCOPE"] = "read"
+    ENV["TWEET_CREATE_URL"] = "http://example.com/api/tweets"
+  end
+
+  teardown do
+    # ENVを元に戻す（他テストへ影響させない）
+    ENV.replace(@orig_env)
+  end
+
+  test "code が渡されたら token を取得して session に保存し一覧へ戻る" do
+    original = Oauth::TokenClient
+    Oauth.send(:remove_const, :TokenClient)
+
+    fake = Class.new do
+      def exchange_code_for_token!(code:) = "token-123"
+    end
+    Oauth.const_set(:TokenClient, fake)
+
+    get callback_oauth_path(code: "abc")
+
+    assert_redirected_to photos_path
+    assert_equal "token-123", session[:oauth_access_token]
+  ensure
+    Oauth.send(:remove_const, :TokenClient)
+    Oauth.const_set(:TokenClient, original)
+  end
+
+  test "code が空ならエラーで一覧へ戻る" do
+    get callback_oauth_path(code: "")
+    assert_redirected_to photos_path
+    follow_redirect!
+    assert_select ".flash-alert", /認可コードが取得できませんでした/
+  end
+
+  test "設定が未完了ならエラーで一覧へ戻る" do
+    ENV.delete("OAUTH_TOKEN_URL")
+
+    get callback_oauth_path(code: "abc")
+    assert_redirected_to photos_path
+    follow_redirect!
+    assert_select ".flash-alert", /OAuth連携の設定が未完了です/
+  end
+end
+```
+
+```[test/integration/photo_list_test.rb]
+require "test_helper"
+
+class PhotoListTest < ActionDispatch::IntegrationTest
+  # test "the truth" do
+  #   assert true
+  # end
+
+  setup do
+    @user1 = User.create!(email: "user1@example.com", password: "password", password_confirmation: "password")
+    @user2 = User.create!(email: "user2@example.com", password: "password", password_confirmation: "password")
+  end
+
+  def login_as(user, password: "password")
+    post session_path, params: { login_form: { email: user.email, password: password } }
+    follow_redirect!
+  end
+
+  test "ログイン済みなら写真一覧が表示される（0件でもOK）" do
+    login_as(@user1)
+
+    assert_response :success
+    assert_select ".photo-grid"
+    assert_select ".photo-card", count: 0
+  end
+
+  test "ログインユーザの写真だけが表示される" do
+    # user1の写真
+    create_photo!(user: @user1, title: "user1-photo1")
+    create_photo!(user: @user1, title: "user1-photo2")
+
+    # user2の写真（表示されないはず）
+    create_photo!(user: @user2, title: "user2-photo1")
+
+    login_as(@user1)
+
+    assert_select ".photo-title", text: "user1-photo1"
+    assert_select ".photo-title", text: "user1-photo2"
+    assert_select ".photo-title", text: "user2-photo1", count: 0
+  end
+
+  test "写真は最後にアップロードした順で表示される" do
+    create_photo!(user: @user1, title: "older", created_at: 2.days.ago, updated_at: 2.days.ago)
+    create_photo!(user: @user1, title: "newer", created_at: 1.hour.ago, updated_at: 1.hour.ago)
+
+    login_as(@user1)
+
+    body = @response.body
+    assert body.index("newer") < body.index("older"), "newer が older より先に表示されるべき"
+  end
+end
+```
+
+```[test/integration/photo_upload_test.rb]
+require "test_helper"
+
+class PhotoUploadTest < ActionDispatch::IntegrationTest
+  # test "the truth" do
+  #   assert true
+  # end
+
+  setup do
+    @user = User.create!(email: "test@example.com", password: "password", password_confirmation: "password")
+    post session_path, params: { login_form: { email: "test@example.com", password: "password" } }
+  end
+
+  test "写真をアップロードすると一覧へリダイレクトし、先頭に表示される" do
+    post photos_path, params: {
+      photo: {
+        title: "my photo",
+        image: uploaded_image
+      }
+    }
+
+    assert_redirected_to photos_path
+    follow_redirect!
+    assert_response :success
+    assert_select ".photo-title", text: "my photo"
+  end
+
+  test "title 未入力だと 422 で new を再表示" do
+    post photos_path, params: {
+      photo: { title: "", image: uploaded_image }
+    }
+
+    assert_response :unprocessable_entity
+    assert_select "h1", /アップロード|新規/  # 見出しに合わせて調整
+    assert_select "li", /タイトルを入力してください/
+  end
+
+  test "image 未入力だと 422 で new を再表示" do
+    post photos_path, params: {
+      photo: { title: "my photo", image: nil }
+    }
+
+    assert_response :unprocessable_entity
+    assert_select "li", /画像ファイルを入力してください|画像を入力してください/
+  end
+
+  test "title が31文字だとエラー" do
+    post photos_path, params: {
+      photo: { title: "a" * 31, image: uploaded_image }
+    }
+
+    assert_response :unprocessable_entity
+    assert_select "li", /タイトルは30文字以内で入力してください/
+  end
+end
+```
+
+```[test/integration/tweet_test.rb]
+require "test_helper"
+
+class TweetTest < ActionDispatch::IntegrationTest
+  # test "the truth" do
+  #   assert true
+  # end
+
+  setup do
+    @user = User.create!(
+      email: "test@example.com",
+      password: "password",
+      password_confirmation: "password"
+    )
+
+    # ログイン（これで session[:user_id] が入る）
+    post session_path, params: { login_form: { email: @user.email, password: "password" } }
+
+    # OAuthの設定を満たす（callbackが弾かれないように）
+    @orig_env = ENV.to_h
+    ENV["OAUTH_AUTHORIZE_URL"] = "http://example.com/oauth/authorize"
+    ENV["OAUTH_TOKEN_URL"]      = "http://example.com/oauth/token"
+    ENV["OAUTH_CLIENT_ID"]      = "client_id"
+    ENV["OAUTH_CLIENT_SECRET"]  = "client_secret"
+    ENV["OAUTH_REDIRECT_URI"]   = "http://localhost:3000/oauth/callback"
+    ENV["OAUTH_SCOPE"]          = "read"
+    ENV["TWEET_CREATE_URL"]     = "http://example.com/api/tweets"
+  end
+
+  teardown do
+    ENV.replace(@orig_env)
+  end
+
+  # tokenを「正規のcallback経由」でsessionに入れる
+  def oauth_connect_with_fake_token(token: "token-123")
+    original = Oauth::TokenClient
+    Oauth.send(:remove_const, :TokenClient)
+
+    fake = Class.new do
+      def initialize(token) = (@token = token)
+      def exchange_code_for_token!(code:) = @token
+    end
+
+    # new で token を渡せるようにする（initializeで保持）
+    Oauth.const_set(:TokenClient, Class.new do
+      define_method(:initialize) { @token = token }
+      define_method(:exchange_code_for_token!) { |code:| token }
+    end)
+
+    get callback_oauth_path(code: "abc")
+  ensure
+    Oauth.send(:remove_const, :TokenClient)
+    Oauth.const_set(:TokenClient, original)
+  end
+
+  test "token があると tweet でき、一覧へ戻る" do
+    photo = @user.photos.create!(title: "hello", image: uploaded_image)
+
+    # session[:oauth_access_token] を入れる
+    oauth_connect_with_fake_token(token: "token-123")
+    assert_equal "token-123", session[:oauth_access_token]
+
+    # TweetClient を差し替えて「外部HTTPを絶対に呼ばない」
+    original = ::TweetClient
+    Object.send(:remove_const, :TweetClient)
+
+    fake = Class.new do
+      class << self
+        attr_accessor :called
+      end
+      self.called = false
+
+      def initialize(access_token:)
+        @access_token = access_token
+      end
+
+      def create_tweet!(title:, url:)
+        self.class.called = true
+        { "id" => 1 }
+      end
+    end
+    Object.const_set(:TweetClient, fake)
+
+    post tweet_photo_path(photo)
+
+    assert_redirected_to photos_path
+    assert_equal true, TweetClient.called
+  ensure
+    Object.send(:remove_const, :TweetClient)
+    Object.const_set(:TweetClient, original)
+  end
+
+  test "token がないとエラーで一覧へ戻る" do
+    photo = @user.photos.create!(title: "hello", image: uploaded_image)
+
+    post tweet_photo_path(photo)
+
+    assert_redirected_to photos_path
+    follow_redirect!
+    assert_select ".flash-alert", /OAuth連携が必要です/
+  end
+
+  test "画像がないとエラーで一覧へ戻る" do
+    # 画像なしPhotoを作る（バリデーション回避）
+    photo = @user.photos.new(title: "hello")
+    photo.save!(validate: false)
+
+    # tokenはある状態にしておく（tokenがないと先に弾かれてしまうため）
+    oauth_connect_with_fake_token(token: "token-123")
+    assert_equal "token-123", session[:oauth_access_token]
+
+    post tweet_photo_path(photo)
+
+    assert_redirected_to photos_path
+    follow_redirect!
+    assert_select ".flash-alert", /画像がありません/
+  end
+end
+```
+
+/rails-assignment/myapp/test/models/
+```[test/models/.keep]
+```
+
+```[test/models/photo_test.rb]
+require "test_helper"
+
+class PhotoTest < ActiveSupport::TestCase
+  # test "the truth" do
+  #   assert true
+  # end
+
+  setup do
+    @user = User.create!(email: "test@example.com", password: "password", password_confirmation: "password")
+  end
+
+  test "title と image があれば有効" do
+    photo = @user.photos.new(title: "hello")
+    photo.image.attach(uploaded_image)
+
+    assert photo.valid?
+  end
+
+  test "title が未入力だと無効" do
+    photo = @user.photos.new(title: "")
+    photo.image.attach(uploaded_image)
+
+    assert_not photo.valid?
+    assert_includes photo.errors[:title], "を入力してください"
+  end
+
+  test "title は30文字まで" do
+    photo = @user.photos.new(title: "a" * 31)
+    photo.image.attach(uploaded_image)
+
+    assert_not photo.valid?
+    assert_includes photo.errors[:title], "は30文字以内で入力してください"
+  end
+
+  test "image が未入力だと無効" do
+    photo = @user.photos.new(title: "hello")
+
+    assert_not photo.valid?
+    assert_includes photo.errors[:image], "を入力してください"
+  end
+
+  test "image は jpg/jpeg/png/gif のみ許可" do
+    photo = @user.photos.new(title: "hello")
+    # テキストをjpg偽装ではなく、content_typeで落とす想定
+    photo.image.attach(
+      uploaded_image(filename: "not_image.txt", content_type: "text/plain")
+    )
+
+    assert_not photo.valid?
+    assert_includes photo.errors[:image], "は jpg, jpeg, png, gif のみアップロード可能です"
+  end
+end
+```
+
+```[test/models/user_test.rb]
+require "test_helper"
+
+class UserTest < ActiveSupport::TestCase
+  # test "the truth" do
+  #   assert true
+  # end
+
+  test "emailは保存前にstrip/downcaseで正規化される" do
+    user = User.new(
+      email: "  TEST@EXAMPLE.COM  ",
+      password: "password",
+      password_confirmation: "password"
+    )
+
+    user.valid? # before_validationが走る
+    assert_equal "test@example.com", user.email
+  end
+
+  test "passwordは新規作成時のみ必須" do
+    user = User.create!(
+      email: "test@example.com",
+      password: "password",
+      password_confirmation: "password"
+    )
+
+    # 更新時にpasswordを入れなくてもvalidであること
+    user.email = "updated@example.com"
+    assert user.valid?
+  end
+
+  test "emailは重複できない" do
+    User.create!(
+      email: "test@example.com",
+      password: "password",
+      password_confirmation: "password"
+    )
+
+    user2 = User.new(
+      email: "test@example.com",
+      password: "password",
+      password_confirmation: "password"
+    )
+
+    assert_not user2.valid?
+    assert_includes user2.errors[:email], "はすでに存在します"
+  end
+
+  test "emailは大小違いでも重複できない（正規化される）" do
+    User.create!(
+      email: "test@example.com",
+      password: "password",
+      password_confirmation: "password"
+    )
+
+    user2 = User.new(
+      email: "TEST@EXAMPLE.COM",
+      password: "password",
+      password_confirmation: "password"
+    )
+
+    assert_not user2.valid?
+    assert_includes user2.errors[:email], "はすでに存在します"
+  end
+
+  test "emailの重複はDBのunique制約でも防がれる" do
+    User.insert_all!([
+      { email: "test@example.com", password_digest: BCrypt::Password.create("password"), created_at: Time.current, updated_at: Time.current }
+    ])
+
+    assert_raises(ActiveRecord::RecordNotUnique) do
+      User.insert_all!([
+        { email: "test@example.com", password_digest: BCrypt::Password.create("password"), created_at: Time.current, updated_at: Time.current }
+      ])
+    end
+  end
+end
+```
+
