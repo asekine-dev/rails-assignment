@@ -22,7 +22,7 @@ class LogoutTest < ActionDispatch::IntegrationTest
     assert_redirected_to new_session_path
     assert_nil session[:user_id]
     follow_redirect!
-    assert_select 'form[action=?]', session_path
-    assert_select 'input[name=?]', 'login_form[email]'
+    assert_select "form[action=?]", session_path
+    assert_select "input[name=?]", "login_form[email]"
   end
 end

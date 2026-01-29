@@ -9,8 +9,8 @@ class AuthGuardTest < ActionDispatch::IntegrationTest
     get photos_path
     assert_redirected_to new_session_path
     follow_redirect!
-    assert_select 'form[action=?]', session_path
-    assert_select 'input[name=?]', 'login_form[email]'
+    assert_select "form[action=?]", session_path
+    assert_select "input[name=?]", "login_form[email]"
   end
 
   test "未ログインで写真アップロード画面へアクセスするとログインへリダイレクト" do

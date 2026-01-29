@@ -13,7 +13,7 @@ class Photo < ApplicationRecord
 
     allowed = %w[image/jpeg image/png image/gif]
     unless allowed.include?(image.content_type)
-      errors.add(:image, 'は jpg, jpeg, png, gif のみアップロード可能です')
+      errors.add(:image, "は jpg, jpeg, png, gif のみアップロード可能です")
     end
   end
 end
