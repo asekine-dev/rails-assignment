@@ -15,5 +15,12 @@ Rails.application.routes.draw do
   # --- application routes ---
   root "photos#index"
   resource :session, only: [ :new, :create, :destroy ]
-  resources :photos, only: [ :index, :new, :create ]
+  resources :photos, only: [ :index, :new, :create ] do
+    post :tweet, on: :member
+  end
+
+  resource :oauth, only: [], controller: "oauth" do
+    get :authorize
+    get :callback
+  end
 end

@@ -6,7 +6,7 @@ class ApplicationController < ActionController::Base
   stale_when_importmap_changes
 
   # --- application specific settings ---
-  helper_method :current_user, :logged_in?
+  helper_method :current_user, :logged_in?, :oauth_configured?
 
   private
 
@@ -21,5 +21,15 @@ class ApplicationController < ActionController::Base
   def require_login
     return if logged_in?
     redirect_to new_session_path
+  end
+
+  def oauth_configured?
+    ENV["OAUTH_AUTHORIZE_URL"].present? &&
+      ENV["OAUTH_TOKEN_URL"].present? &&
+      ENV["OAUTH_CLIENT_ID"].present? &&
+      ENV["OAUTH_CLIENT_SECRET"].present? &&
+      ENV["OAUTH_REDIRECT_URI"].present? &&
+      ENV["OAUTH_SCOPE"].present? &&
+      ENV["TWEET_CREATE_URL"].present?
   end
 end

@@ -24,6 +24,11 @@
   </head>
 
   <body>
+    <% flash.each do |type, message| %>
+      
+      <div class="flash flash-<%= type %> flash--auto-hide"><%= message %></div>
+    <% end %>
+
     <% if show_logout_link? %>
       <%= link_to "ログアウト", session_path, data: { turbo_method: :delete } %>
     <% end %>
