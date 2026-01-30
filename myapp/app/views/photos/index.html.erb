@@ -1,6 +1,18 @@
 <h1>写真一覧</h1>
 
-<%= link_to "写真をアップロード", new_photo_path %>
+<% if oauth_configured? %>
+  <div>
+    <% if oauth_connected? %>
+      <p>OAuth連携済み</p>
+    <% else %>
+      <%= link_to "OAuth連携する", authorize_oauth_path %>
+    <% end %>
+  </div>
+<% end %>
+
+<div>
+  <%= link_to "写真をアップロード", new_photo_path %>
+</div>
 
 <div class="photo-grid">
   <% @photos.each do |photo| %>
@@ -14,6 +26,10 @@
           <div class="photo-empty">No Image</div>
         <% end %>
       </div>
+
+      <% if oauth_connected? %>
+        <%= button_to "ツイートする", tweet_photo_path(photo), method: :post %>
+      <% end %>
     </div>
   <% end %>
 </div>

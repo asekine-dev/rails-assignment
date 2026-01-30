@@ -63,4 +63,8 @@ group :test do
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
   gem "capybara"
   gem "selenium-webdriver"
+
+  # Minitest 6では stub が minitest-mock に切り出されたため、テスト用に追加
+  # https://docs.seattlerb.org/minitest/History_rdoc.html
+  gem "minitest-mock"
 end

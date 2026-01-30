@@ -177,6 +177,7 @@ GEM
     mini_mime (1.1.5)
     minitest (6.0.1)
       prism (~> 1.5)
+    minitest-mock (5.27.0)
     msgpack (1.8.0)
     mysql2 (0.5.7)
       bigdecimal
@@ -401,6 +402,7 @@ DEPENDENCIES
   importmap-rails
   jbuilder
   kamal
+  minitest-mock
   mysql2 (~> 0.5)
   propshaft
   puma (>= 5.0)
