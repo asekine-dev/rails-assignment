@@ -1,0 +1,24 @@
+<h1>写真アップロード</h1>
+
+<% if @photo.errors.present? %>
+  <ul>
+    <% @photo.errors.full_messages.each do |msg| %>
+      <li style="color:red"><%= msg %></li>
+    <% end %>
+  </ul>
+<% end %>
+
+<%= form_with model: @photo, local: true do |f| %>
+  <div>
+    <%= f.label :title %>
+    <%= f.text_field :title %>
+  </div>
+
+  <div>
+    <%= f.label :image %>
+    <%= f.file_field :image %>
+  </div>
+
+  <%= f.submit "アップロード" %>
+  <%= link_to "キャンセル", photos_path %>
+<% end %>

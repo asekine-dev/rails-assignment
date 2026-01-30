@@ -1,0 +1,19 @@
+<h1>写真一覧</h1>
+
+<%= link_to "写真をアップロード", new_photo_path %>
+
+<div class="photo-grid">
+  <% @photos.each do |photo| %>
+    <div class="photo-card">
+      <div class="photo-title"><%= photo.title %></div>
+
+      <div class="photo-square">
+        <% if photo.image.attached? %>
+          <%= image_tag photo.image, class: "photo-img" %>
+        <% else %>
+          <div class="photo-empty">No Image</div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>

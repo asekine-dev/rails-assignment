@@ -13,6 +13,7 @@ Rails.application.routes.draw do
   # root "posts#index"
 
   # --- application routes ---
-  root "sessions#new"
+  root "photos#index"
   resource :session, only: [ :new, :create, :destroy ]
+  resources :photos, only: [ :index, :new, :create ]
 end

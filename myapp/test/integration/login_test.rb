@@ -44,7 +44,7 @@ class LoginTest < ActionDispatch::IntegrationTest
   test "メールアドレスは大小文字無視でログインできる" do
     post session_path, params: { login_form: { email: "TEST@EXAMPLE.COM", password: "password" } }
 
-    assert_redirected_to root_path
+    assert_redirected_to photos_path
     follow_redirect!
     assert_response :success
   end
@@ -72,6 +72,6 @@ class LoginTest < ActionDispatch::IntegrationTest
 
   test "メールアドレスの前後空白があってもログインできる" do
     post session_path, params: { login_form: { email: "  test@example.com  ", password: "password" } }
-    assert_redirected_to root_path
+    assert_redirected_to photos_path
   end
 end

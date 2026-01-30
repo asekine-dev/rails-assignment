@@ -18,10 +18,15 @@ class SessionsController < ApplicationController
 
     if user
       session[:user_id] = user.id
-      redirect_to root_path
+      redirect_to photos_path
     else
       @login_form.errors.add(:base, "メールアドレスまたはパスワードが違います")
       render :new, status: :unprocessable_entity
     end
+  end
+
+  def destroy
+    reset_session
+    redirect_to new_session_path
   end
 end

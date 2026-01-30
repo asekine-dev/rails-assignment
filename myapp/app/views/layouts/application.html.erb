@@ -24,6 +24,10 @@
   </head>
 
   <body>
+    <% if show_logout_link? %>
+      <%= link_to "ログアウト", session_path, data: { turbo_method: :delete } %>
+    <% end %>
+
     <%= yield %>
   </body>
 </html>

@@ -44,4 +44,33 @@ class UserTest < ActiveSupport::TestCase
     assert_not user2.valid?
     assert_includes user2.errors[:email], "はすでに存在します"
   end
+
+  test "emailは大小違いでも重複できない（正規化される）" do
+    User.create!(
+      email: "test@example.com",
+      password: "password",
+      password_confirmation: "password"
+    )
+
+    user2 = User.new(
+      email: "TEST@EXAMPLE.COM",
+      password: "password",
+      password_confirmation: "password"
+    )
+
+    assert_not user2.valid?
+    assert_includes user2.errors[:email], "はすでに存在します"
+  end
+
+  test "emailの重複はDBのunique制約でも防がれる" do
+    User.insert_all!([
+      { email: "test@example.com", password_digest: BCrypt::Password.create("password"), created_at: Time.current, updated_at: Time.current }
+    ])
+
+    assert_raises(ActiveRecord::RecordNotUnique) do
+      User.insert_all!([
+        { email: "test@example.com", password_digest: BCrypt::Password.create("password"), created_at: Time.current, updated_at: Time.current }
+      ])
+    end
+  end
 end
