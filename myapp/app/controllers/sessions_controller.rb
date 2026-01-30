@@ -4,18 +4,10 @@ class SessionsController < ApplicationController
   end
 
   def create
-    form_params = params.require(:login_form).permit(:email, :password)
-    @login_form = LoginForm.new(form_params)
+    @login_form = LoginForm.new(params.require(:login_form).permit(:email, :password))
+    return render(:new, status: :unprocessable_entity) if @login_form.invalid?
 
-    if @login_form.invalid?
-      return render :new, status: :unprocessable_entity
-    end
-
-    user = User.authenticate_by(
-      email: @login_form.normalized_email,
-      password: @login_form.password
-    )
-
+    user = User.authenticate_by(email: @login_form.normalized_email, password: @login_form.password)
     if user
       session[:user_id] = user.id
       redirect_to photos_path
