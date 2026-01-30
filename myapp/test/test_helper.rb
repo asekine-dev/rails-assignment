@@ -15,7 +15,7 @@ module ActiveSupport
     # --- application specific settings ---
     include ActionDispatch::TestProcess
 
-    def uploaded_image(filename: "sample.jpg", content_type: "image/jpg")
+    def uploaded_image(filename: "sample.jpg", content_type: "image/jpeg")
       fixture_file_upload(Rails.root.join("test/fixtures/files/#{filename}"), content_type)
     end
 

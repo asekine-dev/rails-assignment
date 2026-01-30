@@ -4,7 +4,7 @@ class User < ApplicationRecord
   has_secure_password
   before_validation :normalize_email
 
-  validates :email, presence: true, uniqueness: true
+  validates :email, presence: true, uniqueness: { case_sensitive: false }
   # パスワードは新規ユーザ作成時のみ必須バリデーション
   validates :password, presence: true, on: :create
 

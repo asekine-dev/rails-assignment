@@ -8,6 +8,24 @@
  *
  * Consider organizing styles into separate files for maintainability.
  */
+
+/* ===== Photo list ===== */
+.photo-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.photo-list-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.photo-list-actions p {
+  margin: 0;
+}
+
 .photo-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -31,6 +49,7 @@
   white-space: nowrap;
 }
 
+/* Square image container */
 .photo-square {
   width: 100%;
   aspect-ratio: 1 / 1;
@@ -56,12 +75,19 @@
   font-size: 12px;
 }
 
-/* Rails標準でバリデーションエラーフィールドをラップする構造 */
+/* Action buttons inside photo card */
+.photo-tweet {
+  display: flex;
+  justify-content: center;
+}
+
+/* ===== Rails helpers ===== */
+/* Rails wraps invalid fields with .field_with_errors */
 .field_with_errors {
   display: inline;
 }
 
-/* Flash message (notice / alert) 外部連携や操作結果を一時的に通知 */
+/* Flash message（notice / alert） */
 .flash {
   position: fixed;
   top: 16px;

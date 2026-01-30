@@ -18,8 +18,6 @@ class PhotosController < ApplicationController
     end
   end
 
-
-
   def tweet
     begin
       photo = current_user.photos.find(params[:id])
@@ -35,13 +33,11 @@ class PhotosController < ApplicationController
       )
 
       redirect_to photos_path, notice: "ツイートしました"
-    rescue => e
+    rescue StandardError => e
       Rails.logger.error("[Tweet] failed: #{e.class} #{e.message}")
       redirect_to photos_path, alert: "ツイートに失敗しました"
     end
   end
-
-
 
   private
 

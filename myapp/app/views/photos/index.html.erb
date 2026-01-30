@@ -1,35 +1,37 @@
-<h1>写真一覧</h1>
+<div class="photo-page">
+  <h1>写真一覧</h1>
 
-<% if oauth_configured? %>
-  <div>
-    <% if oauth_connected? %>
-      <p>OAuth連携済み</p>
-    <% else %>
-      <%= link_to "OAuth連携する", authorize_oauth_path %>
+  <div class="photo-list-actions">
+    <% if oauth_configured? %>
+      <% if oauth_connected? %>
+        <p>OAuth連携済み</p>
+      <% else %>
+        <%= link_to "OAuth連携する", authorize_oauth_path %>
+      <% end %>
     <% end %>
+
+    <%= link_to "写真をアップロード", new_photo_path %>
   </div>
-<% end %>
 
-<div>
-  <%= link_to "写真をアップロード", new_photo_path %>
-</div>
+  <div class="photo-grid">
+    <% @photos.each do |photo| %>
+      <div class="photo-card">
+        <div class="photo-title"><%= photo.title %></div>
 
-<div class="photo-grid">
-  <% @photos.each do |photo| %>
-    <div class="photo-card">
-      <div class="photo-title"><%= photo.title %></div>
+        <div class="photo-square">
+          <% if photo.image.attached? %>
+            <%= image_tag photo.image, class: "photo-img" %>
+          <% else %>
+            <div class="photo-empty">No Image</div>
+          <% end %>
+        </div>
 
-      <div class="photo-square">
-        <% if photo.image.attached? %>
-          <%= image_tag photo.image, class: "photo-img" %>
-        <% else %>
-          <div class="photo-empty">No Image</div>
+        <% if oauth_connected? %>
+          <div class="photo-tweet">
+            <%= button_to "ツイートする", tweet_photo_path(photo), method: :post %>
+          </div>
         <% end %>
       </div>
-
-      <% if oauth_connected? %>
-        <%= button_to "ツイートする", tweet_photo_path(photo), method: :post %>
-      <% end %>
-    </div>
-  <% end %>
+    <% end %>
+  </div>
 </div>
