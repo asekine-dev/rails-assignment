@@ -18,8 +18,6 @@ class PhotosController < ApplicationController
     end
   end
 
-
-
   def tweet
     begin
       photo = current_user.photos.find(params[:id])
@@ -40,8 +38,6 @@ class PhotosController < ApplicationController
       redirect_to photos_path, alert: "ツイートに失敗しました"
     end
   end
-
-
 
   private
 
